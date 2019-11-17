@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<htm lang="en">
+
+    <head>
+        <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=7">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="https://fonts.googleapis.com/css?family=Caveat:400,700|Wallpoet&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="index.css" />
+        <title>Snake</title>
+    </head>
+
+    <body>
+        <header class="game__header">
+            <section class="game__header-content">
+                <h1 class="primary__heading">Snake 💯</h1>
+                <nav class="nav">
+                    <ul class="nav__list">
+                        <li class="nav__item"><button class="nav__btn new-game">New Game</button></li>
+                        <li class="nav__item"><button class="nav__btn cancel">Continue</button></li>
+                        <li class="nav__item"><button class="nav__btn">GitHub Repo</button></li>
+                    </ul>
+                </nav>
+            </section>
+        </header>
+        <main class="game__body">
+            <h2 class="game__status">Let's Play!</h2>
+            <section class="game__body-content">
+                <section class="scores">
+                    <p class="score">Score:
+                        <span class="score-span">0</span>
+                    </p>
+                    <p class="record">Record:
+                        <span class="record-span">0</span>
+                    </p>
+                </section>
+                <canvas class="game__board" width="300" height="450">
+                </canvas>
+                <p class="message"></p>
+            </section>
+        </main>
+    </body>
+    <footer class="footer">
+        2019&copy; Joco
+    </footer>
+    <script src="index.js"></script>
+
+    </html>
