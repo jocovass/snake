@@ -71,6 +71,11 @@
       score = 0;
       displayScore();
     }
+    function setInitialGameState() {
+      isPlaying = false;
+      pause = false;
+      isGameOver = false;
+    }
 
     function setRecord(num) {
       record = num;
@@ -95,7 +100,7 @@
         score += 15;
       } else if (score < 650) {
         score += 30;
-      } else if (score < 1200) {
+      } else {
         score += 50;
       }
       displayScore();
@@ -114,6 +119,7 @@
       updateGameStatus,
       updateScore,
       updatePause,
+      setInitialGameState,
       setRecord,
     };
   })();
@@ -203,7 +209,6 @@
 
     function increaseSpeed() {
       speed -= 50;
-      console.log(speed);
     }
 
     function moveSnake() {
@@ -355,6 +360,7 @@
     messageDiv.innerHTML = 'Press <kbd>SPACE</kbd> to pause the game!';
     gameStatusDiv.style.color = '';
     gameStatusDiv.textContent = 'Game On! Enjoy!';
+    setGameState();
     game.resetScore();
     game.updateGameStatus();
     snake.initializeSnake();
@@ -393,6 +399,8 @@
           navItems[1].classList.remove('hidden');
           gameHeader.classList.remove('hidden');
           gameStatusDiv.textContent = 'Game Paused!';
+        } else if (game.getPauseStatus() && !game.getGameStatus()) {
+          handelCancelClick();
         }
         break;
       case 13:
@@ -414,6 +422,10 @@
     game.displayRecord();
     snake.initializeSnake();
     clearCanvas();
+  }
+
+  function setGameState() {
+    game.setInitialGameState();
   }
 
   function startAnimation() {
