@@ -13,4 +13,4 @@ Navigation:
   * SPACE - to pause the game
             
 
-##### by Joco :octocat
+##### by Joco :octocat:
