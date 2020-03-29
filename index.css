@@ -91,7 +91,7 @@ body {
 
 .game__body {
   text-align: center;
-  min-height: calc(100vh - 2.6rem - 3rem);
+  min-height: calc(100vh - 2.8rem - 3rem);
 }
 
 .game__body-content {

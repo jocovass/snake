@@ -11,10 +11,10 @@
   document.addEventListener('keydown', handleKeyPress);
   document
     .querySelector('.new-game')
-    .addEventListener('click', handelNewGameClick);
+    .addEventListener('click', handleNewGameClick);
   document
     .querySelector('.cancel')
-    .addEventListener('click', handelCancelClick);
+    .addEventListener('click', handleCancelClick);
 
   var INITIAL__SNAKE__POSITION = [
     { x: 9, y: 23, width: 15 },
@@ -23,8 +23,8 @@
   ];
 
   var game = (function setGame() {
-    var isGameOver = false;
-    var isPlaying = false;
+    var started = false;
+    var gameover = false;
     var pause = false;
     var score = 0;
     var record = 0;
@@ -51,12 +51,8 @@
       recordSpan.textContent = record;
     }
 
-    function gameOver() {
-      return isGameOver;
-    }
-
-    function getGameStatus() {
-      return isPlaying;
+    function isGameover() {
+      return gameover;
     }
 
     function getPauseStatus() {
@@ -67,26 +63,26 @@
       return score;
     }
 
+    function isGameStarted() {
+      return started;
+    }
+
     function resetScore() {
       score = 0;
       displayScore();
     }
     function setInitialGameState() {
-      isPlaying = false;
       pause = false;
-      isGameOver = false;
+      gameover = false;
+      started = true;
     }
 
     function setRecord(num) {
       record = num;
     }
 
-    function updateGameOver() {
-      isGameOver = !isGameOver;
-    }
-
-    function updateGameStatus() {
-      isPlaying = !isPlaying;
+    function updateGameover() {
+      gameover = !gameover;
     }
 
     function updatePause() {
@@ -107,19 +103,24 @@
       checkForSpeedIncrease();
     }
 
+    function setIsGameStarted() {
+      started = false;
+    }
+
     return {
       checkForNewRecord,
       displayRecord,
-      gameOver,
+      isGameover,
       getPauseStatus,
-      getGameStatus,
       getScore,
+      isGameStarted,
+      initializeGame,
       resetScore,
-      updateGameOver,
-      updateGameStatus,
+      updateGameover,
       updateScore,
       updatePause,
       setInitialGameState,
+      setIsGameStarted,
       setRecord,
     };
   })();
@@ -178,7 +179,8 @@
       ctx.strokeStyle = '#000';
       positions.map(callback);
       if (checkCollision()) {
-        game.updateGameStatus();
+        game.updateGameover();
+        game.updatePause();
         ctx.fillStyle = 'red';
         callback(positions[0]);
       }
@@ -245,7 +247,11 @@
     }
 
     function initializeSnake() {
-      positions = [...INITIAL__SNAKE__POSITION];
+      positions = [
+        { ...INITIAL__SNAKE__POSITION[0] },
+        { ...INITIAL__SNAKE__POSITION[1] },
+        { ...INITIAL__SNAKE__POSITION[2] },
+      ];
     }
 
     function setInitialDirection() {
@@ -254,6 +260,10 @@
         y: -1,
         heading: 'up',
       };
+    }
+
+    function setInitialSpeed() {
+      speed = 150;
     }
 
     return {
@@ -266,6 +276,7 @@
       initializeSnake,
       moveSnake,
       setInitialDirection,
+      setInitialSpeed,
     };
   })();
 
@@ -325,11 +336,11 @@
     };
   })();
 
-  function clearCanvas() {
+  function clearCanvas(newGame) {
     ctx.fillStyle = 'rgb(62, 160, 30)';
     ctx.fillRect(0, 0, 300, 450);
     food.drawFood();
-    snake.drawSnake(drawRect);
+    snake.drawSnake(drawRect, newGame);
   }
 
   function drawRect({ x, y, width }) {
@@ -337,34 +348,30 @@
     ctx.fillRect(x * width, y * width, width, width);
   }
 
-  function isGameOver() {
-    if (!game.getPauseStatus()) {
-      game.updateGameOver();
-      messageDiv.innerHTML = 'Press <kbd>ENTER</kbd> to start a new game!';
-      gameStatusDiv.style.color = 'rgb(218, 23, 23)';
-      gameStatusDiv.textContent = 'Game Over :/';
-      game.checkForNewRecord();
-    }
+  function died() {
+    game.setIsGameStarted();
+    messageDiv.innerHTML = 'Press <kbd>ENTER</kbd> to start a new game!';
+    gameStatusDiv.style.color = 'rgb(218, 23, 23)';
+    gameStatusDiv.textContent = 'Game Over :/';
+    game.checkForNewRecord();
   }
 
-  function handelCancelClick() {
+  function handleCancelClick() {
     game.updatePause();
-    game.updateGameStatus();
     gameHeader.classList.add('hidden');
     gameStatusDiv.textContent = 'Game On! Enjoy!';
     startAnimation();
   }
 
-  function handelNewGameClick() {
+  function handleNewGameClick() {
     gameHeader.classList.add('hidden');
     messageDiv.innerHTML = 'Press <kbd>SPACE</kbd> to pause the game!';
     gameStatusDiv.style.color = '';
     gameStatusDiv.textContent = 'Game On! Enjoy!';
+    console.log(snake.getPositions());
+    console.log(INITIAL__SNAKE__POSITION);
+    console.log(snake.getSpeed());
     setGameState();
-    game.resetScore();
-    game.updateGameStatus();
-    snake.initializeSnake();
-    snake.setInitialDirection();
     clearCanvas();
     startAnimation();
   }
@@ -393,19 +400,20 @@
         }
         break;
       case 32:
-        if (!game.getPauseStatus()) {
-          game.updateGameStatus();
-          game.updatePause();
-          navItems[1].classList.remove('hidden');
-          gameHeader.classList.remove('hidden');
-          gameStatusDiv.textContent = 'Game Paused!';
-        } else if (game.getPauseStatus() && !game.getGameStatus()) {
-          handelCancelClick();
+        if (game.isGameStarted()) {
+          if (game.getPauseStatus()) {
+            handleCancelClick();
+          } else {
+            game.updatePause();
+            navItems[1].classList.remove('hidden');
+            gameHeader.classList.remove('hidden');
+            gameStatusDiv.textContent = 'Game Paused!';
+          }
         }
         break;
       case 13:
-        if (!game.getGameStatus() && game.gameOver()) {
-          handelNewGameClick();
+        if (!game.isGameStarted() && game.isGameover()) {
+          handleNewGameClick();
         }
         break;
       default:
@@ -426,6 +434,11 @@
 
   function setGameState() {
     game.setInitialGameState();
+    game.resetScore();
+    snake.initializeSnake();
+    snake.setInitialDirection();
+    snake.setInitialSpeed();
+    food.updateScored();
   }
 
   function startAnimation() {
@@ -434,10 +447,13 @@
     function animateSnake(timeStamp) {
       if (startTime == 0) startTime = timeStamp;
       var progress = timeStamp - startTime;
-      if (!game.getGameStatus()) {
-        isGameOver();
+      if (game.getPauseStatus()) {
+        if (game.isGameover()) {
+          died();
+        }
         return;
       }
+
       if (progress >= speed) {
         snake.moveSnake();
         clearCanvas();
